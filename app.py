@@ -80,6 +80,12 @@ if uploaded_file:
     plt.savefig(grafico_path)
     plt.close()
 
+    st.subheader("📊 Gráfico de Conformidades")
+    st.pyplot(fig)
+
+    st.subheader("📝 Descrições Encontradas")
+    st.write(descricoes_docx)
+
     # Inserir no documento
     doc.add_page_break()
 
