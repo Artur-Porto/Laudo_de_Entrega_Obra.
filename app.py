@@ -13,6 +13,15 @@ from io import BytesIO
 st.set_page_config(layout="wide")
 st.title("📄 Análise de Conformidades - Documento Word")
 
+# --- Proteção com senha usando secrets ---
+st.sidebar.title("🔒 Acesso Restrito")
+senha_correta = st.secrets["senha"]
+senha_digitada = st.sidebar.text_input("Digite a senha:", type="password")
+
+if senha_digitada != senha_correta:
+    st.warning("Acesso negado. Insira a senha correta.")
+    st.stop()
+
 # Upload do arquivo .docx
 uploaded_file = st.file_uploader("Faça upload do arquivo Word (.docx)", type="docx")
 
