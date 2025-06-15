@@ -14,9 +14,9 @@ st.set_page_config(layout="wide")
 st.title("📄 Análise de Conformidades - Documento Word")
 
 # --- Proteção com senha usando secrets ---
-st.sidebar.title("🔒 Acesso Restrito")
+st.subheader("🔒 Acesso Restrito")
 senha_correta = st.secrets["senha"]
-senha_digitada = st.sidebar.text_input("Digite a senha:", type="password")
+senha_digitada = st.text_input("Digite a senha para continuar:", type="password")
 
 if senha_digitada != senha_correta:
     st.warning("Acesso negado. Insira a senha correta.")
