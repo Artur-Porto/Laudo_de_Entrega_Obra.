@@ -90,7 +90,7 @@ if uploaded_file:
     doc.add_page_break()
 
     # Adicionar tabela
-    cabecalhos = ["Descrição", "Normativo", "Projeto", "Boas práticas", "Situação"]
+    cabecalhos = ["Descrição", "Normativo", "Projeto", "Boas Práticas", "Situação"]
     tabela = doc.add_table(rows=len(descricoes_docx) + 1, cols=5)
     tabela.style = 'Table Grid'
 
