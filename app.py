@@ -18,6 +18,13 @@ if senha_digitada != senha_correta:
     st.warning("Acesso negado. Insira a senha correta.")
     st.stop()
 
+st.info(
+    "🔒 **Aviso de privacidade**:\n\n"
+    "Este aplicativo não armazena permanentemente os arquivos enviados. "
+    "Todos os documentos são processados apenas temporariamente durante a sessão atual e são descartados ao final. "
+    "Nenhuma informação é salva em banco de dados ou compartilhada com terceiros."
+)
+
 # Upload do arquivo
 uploaded_file = st.file_uploader("Envie o arquivo Word (.docx)", type="docx")
 
