@@ -2,9 +2,71 @@ import streamlit as st
 from docx import Document
 from docx.shared import RGBColor, Inches, Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 import matplotlib.pyplot as plt
 import numpy as np
 import io
+
+# Função para legenda "Tabela X –"
+def add_caption_field_before(table, idx):
+    p = OxmlElement('w:p')
+    pPr = OxmlElement('w:pPr')
+    pStyle = OxmlElement('w:pStyle')
+    pStyle.set(qn('w:val'), 'Caption')
+    pPr.append(pStyle)
+    p.append(pPr)
+
+    r1 = OxmlElement('w:r')
+    fld1 = OxmlElement('w:fldChar')
+    fld1.set(qn('w:fldCharType'), 'begin')
+    r1.append(fld1)
+    p.append(r1)
+
+    r2 = OxmlElement('w:r')
+    instr = OxmlElement('w:instrText')
+    instr.set(qn('xml:space'), 'preserve')
+    instr.text = 'SEQ Table \\* ARABIC'
+    r2.append(instr)
+    p.append(r2)
+
+    r3 = OxmlElement('w:r')
+    fld2 = OxmlElement('w:fldChar')
+    fld2.set(qn('w:fldCharType'), 'separate')
+    r3.append(fld2)
+    p.append(r3)
+
+    r4 = OxmlElement('w:r')
+    t = OxmlElement('w:t')
+    t.text = f'Tabela {idx} – '
+    r4.append(t)
+    p.append(r4)
+
+    r5 = OxmlElement('w:r')
+    fld3 = OxmlElement('w:fldChar')
+    fld3.set(qn('w:fldCharType'), 'end')
+    r5.append(fld3)
+    p.append(r5)
+
+    tbl = table._element
+    tbl.addprevious(p)
+
+# Função para criar campo de índice ("Lista de Tabelas")
+def add_field_code(paragraph, field_code):
+    run = paragraph.add_run()
+    fldChar1 = OxmlElement('w:fldChar')
+    fldChar1.set(qn('w:fldCharType'), 'begin')
+    instrText = OxmlElement('w:instrText')
+    instrText.set(qn('xml:space'), 'preserve')
+    instrText.text = field_code
+    fldChar2 = OxmlElement('w:fldChar')
+    fldChar2.set(qn('w:fldCharType'), 'separate')
+    fldChar3 = OxmlElement('w:fldChar')
+    fldChar3.set(qn('w:fldCharType'), 'end')
+    run._r.append(fldChar1)
+    run._r.append(instrText)
+    run._r.append(fldChar2)
+    run._r.append(fldChar3)
 
 # Título do app
 st.title("📄 Analisador de Conformidades em Documento Word")
@@ -25,22 +87,25 @@ if senha_digitada != senha_correta:
     st.warning("Acesso negado. Insira a senha correta.")
     st.stop()
 
-
-# Upload do arquivo
+# Upload
 uploaded_file = st.file_uploader("Envie o arquivo Word (.docx)", type="docx")
 
 if uploaded_file:
     st.success("Arquivo carregado com sucesso!")
-    
-    # Carregar documento original
+    file_name = uploaded_file.name.replace(".docx", " - Análise.docx")
+
     doc = Document(uploaded_file)
 
-    # Contagem e extração de descrições
+    # Adicionar legendas antes de cada tabela
+    for i, tbl in enumerate(doc.tables, start=1):
+        add_caption_field_before(tbl, i)
+
+    # Análise de conformidade e extração
     count_conforme = 0
     count_nao_conforme = 0
     descricoes_docx = []
 
-    for table in doc.tables:
+    for idx_table, table in enumerate(doc.tables, start=1):
         for row in table.rows:
             for cell in row.cells:
                 text = cell.text
@@ -48,7 +113,6 @@ if uploaded_file:
                     count_nao_conforme += 1
                 if "Conforme" in text:
                     count_conforme += 1
-
                 if "Descrição" in text:
                     for paragraph in cell.paragraphs:
                         if "Descrição" in paragraph.text:
@@ -58,12 +122,19 @@ if uploaded_file:
                                 if cor and cor.rgb == RGBColor(255, 0, 0):
                                     texto_vermelho += run.text.strip() + " "
                             if texto_vermelho:
-                                descricoes_docx.append(texto_vermelho.strip())
+                                descricoes_docx.append((texto_vermelho.strip(), idx_table))
 
     st.write(f"✔️ Total 'Conforme': {count_conforme}")
     st.write(f"❌ Total 'Não Conforme': {count_nao_conforme}")
 
-    # Gerar gráfico de pizza
+    st.subheader("📝 Descrições Encontradas")
+    if descricoes_docx:
+        for i, (desc, fig) in enumerate(descricoes_docx, 1):
+            st.markdown(f"**{i}.** {desc} *(Figura {fig})*")
+    else:
+        st.info("Nenhuma descrição encontrada.")
+
+    # Gráfico
     fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
     labels = ["Conforme", "Não conforme"]
     data = [count_conforme, count_nao_conforme]
@@ -74,33 +145,26 @@ if uploaded_file:
         return f"{pct:.1f}%\n({absolute:d})"
 
     wedges, texts, autotexts = ax.pie(
-        data,
-        autopct=lambda pct: func(pct, data),
-        textprops=dict(color="w"),
-        colors=colors
+        data, autopct=lambda pct: func(pct, data),
+        textprops=dict(color="w"), colors=colors
     )
     ax.legend(wedges, labels, title="Situação", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
     plt.setp(autotexts, size=8, weight="bold")
     ax.set_title("Análise de Conformidades")
-
-    # Salvar gráfico
-    grafico_path = "grafico_pizza.png"
-    plt.savefig(grafico_path)
-    plt.close()
-
     st.subheader("📊 Gráfico de Conformidades")
     st.pyplot(fig)
 
-    st.subheader("📝 Descrições Encontradas")
-    st.write(descricoes_docx)
+    # Salvar gráfico
+    plt.savefig("grafico_pizza.png")
+    plt.close()
 
-    # Inserir no documento
+    # Inserção de nova página
     doc.add_page_break()
 
-    # Adicionar tabela
-    cabecalhos = ["Descrição", "Normativo", "Projeto", "Boas Práticas", "Situação"]
-    tabela = doc.add_table(rows=len(descricoes_docx) + 1, cols=5)
+    # Tabela de resultados
+    tabela = doc.add_table(rows=len(descricoes_docx) + 1, cols=6)
     tabela.style = 'Table Grid'
+    cabecalhos = ["Descrição", "Normativo", "Projeto", "Boas práticas", "Situação", "Figura"]
 
     for col, texto in enumerate(cabecalhos):
         cell = tabela.cell(0, col)
@@ -109,7 +173,7 @@ if uploaded_file:
             run.font.size = Pt(10)
             run.font.bold = True
 
-    for i, descricao in enumerate(descricoes_docx, start=1):
+    for i, (descricao, num_tabela) in enumerate(descricoes_docx, start=1):
         cell_desc = tabela.cell(i, 0)
         run = cell_desc.paragraphs[0].add_run(descricao)
         run.font.size = Pt(10)
@@ -117,22 +181,29 @@ if uploaded_file:
             cell = tabela.cell(i, col)
             for run in cell.paragraphs[0].runs:
                 run.font.size = Pt(10)
+        tabela.cell(i, 5).text = str(num_tabela)
 
-    # Adicionar gráfico ao final
+    # Gráfico no final
     paragrafo_imagem = doc.add_paragraph()
     run = paragrafo_imagem.add_run()
-    run.add_picture(grafico_path, width=Inches(5))
+    run.add_picture('grafico_pizza.png', width=Inches(5))
     paragrafo_imagem.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    # Salvar novo arquivo para download
+    # Lista de Tabelas
+    doc.add_page_break()
+    doc.add_paragraph("Lista de Tabelas").style = 'Heading 1'
+    p_lista = doc.add_paragraph()
+    add_field_code(p_lista, 'TOC \\h \\z \\c "Table"')
+
+    # Gerar download
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
 
-    st.success("✅ Documento finalizado com tabela e gráfico ao final.")
+    st.success("✅ Documento finalizado com gráfico, tabela e lista de tabelas.")
     st.download_button(
         label="📥 Baixar novo Word",
         data=buffer,
-        file_name = uploaded_file.name.replace(".docx", " - Análise.docx"),
+        file_name=file_name,
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
