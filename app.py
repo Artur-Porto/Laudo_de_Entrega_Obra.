@@ -175,26 +175,31 @@ if uploaded_file:
     doc.add_page_break()
 
     # Tabela de resultados
-    tabela = doc.add_table(rows=len(descricoes_docx) + 1, cols=6)
-    tabela.style = 'Table Grid'
-    cabecalhos = ["Descrição", "Normativo", "Projeto", "Boas práticas", "Situação", "Figura"]
+    # Tabela de resultados com apenas 2 colunas
+tabela = doc.add_table(rows=len(descricoes_docx) + 1, cols=2)
+tabela.style = 'Table Grid'
+cabecalhos = ["Descrição", "Figura"]
 
-    for col, texto in enumerate(cabecalhos):
-        cell = tabela.cell(0, col)
-        cell.text = texto
-        for run in cell.paragraphs[0].runs:
-            run.font.size = Pt(10)
-            run.font.bold = True
-
-    for i, (descricao, num_tabela) in enumerate(descricoes_docx, start=1):
-        cell_desc = tabela.cell(i, 0)
-        run = cell_desc.paragraphs[0].add_run(descricao)
+# Cabeçalhos
+for col, texto in enumerate(cabecalhos):
+    cell = tabela.cell(0, col)
+    cell.text = texto
+    for run in cell.paragraphs[0].runs:
         run.font.size = Pt(10)
-        for col in range(1, 5):
-            cell = tabela.cell(i, col)
-            for run in cell.paragraphs[0].runs:
-                run.font.size = Pt(10)
-        tabela.cell(i, 5).text = str(num_tabela)
+        run.font.bold = True
+
+# Preenchendo as linhas
+for i, (descricao, num_tabela) in enumerate(descricoes_docx, start=1):
+    # Coluna "Descrição"
+    cell_desc = tabela.cell(i, 0)
+    run = cell_desc.paragraphs[0].add_run(descricao)
+    run.font.size = Pt(10)
+    
+    # Coluna "Figura"
+    cell_fig = tabela.cell(i, 1)
+    cell_fig.text = str(num_tabela)
+    for run in cell_fig.paragraphs[0].runs:
+        run.font.size = Pt(10)
 
     # Gráfico no final
     paragrafo_imagem = doc.add_paragraph()
