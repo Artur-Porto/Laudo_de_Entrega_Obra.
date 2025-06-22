@@ -159,7 +159,7 @@ if uploaded_file:
     plt.close()
 
     # Inserção de nova página
-    #doc.add_page_break()
+    doc.add_page_break()
 
     # Tabela de resultados
     tabela = doc.add_table(rows=len(descricoes_docx) + 1, cols=6)
@@ -190,7 +190,7 @@ if uploaded_file:
     paragrafo_imagem.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     # Lista de Tabelas
-    doc.add_page_break()
+    #doc.add_page_break()
     doc.add_paragraph("Lista de Figuras").style = 'Heading 1'
     p_lista = doc.add_paragraph()
     add_field_code(p_lista, 'TOC \\h \\z \\c "Table"')
