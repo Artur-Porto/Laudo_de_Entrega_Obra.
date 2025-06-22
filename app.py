@@ -124,8 +124,8 @@ if uploaded_file:
         for row in table.rows:
             for cell in row.cells:
                 text = cell.text
-               count_nao_conforme += text.count("Não conforme")
-               count_conforme += text.count("Conforme")
+                count_nao_conforme += text.count("Não conforme")
+                count_conforme += text.count("Conforme")
                 if "Descrição" in text:
                     for paragraph in cell.paragraphs:
                         if "Descrição" in paragraph.text:
