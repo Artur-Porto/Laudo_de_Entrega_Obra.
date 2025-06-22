@@ -51,7 +51,7 @@ def add_caption_field_before(table, idx, cor_hex="FFFFFF"):
     r4.append(rPr)
 
     t = OxmlElement('w:t')
-    t.text = f'Tabela {idx} – '
+    t.text = f'Figura {idx} – '
     r4.append(t)
     p.append(r4)
 
