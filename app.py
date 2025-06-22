@@ -9,20 +9,24 @@ import numpy as np
 import io
 
 # Função para legenda "Tabela X –"
-def add_caption_field_before(table, idx):
+def add_caption_field_before(table, idx, cor_hex="FFFFFF"):
     p = OxmlElement('w:p')
+
+    # Estilo de parágrafo "Caption"
     pPr = OxmlElement('w:pPr')
     pStyle = OxmlElement('w:pStyle')
     pStyle.set(qn('w:val'), 'Caption')
     pPr.append(pStyle)
     p.append(pPr)
 
+    # Campo SEQ begin
     r1 = OxmlElement('w:r')
     fld1 = OxmlElement('w:fldChar')
     fld1.set(qn('w:fldCharType'), 'begin')
     r1.append(fld1)
     p.append(r1)
 
+    # Campo SEQ instrução
     r2 = OxmlElement('w:r')
     instr = OxmlElement('w:instrText')
     instr.set(qn('xml:space'), 'preserve')
@@ -30,24 +34,35 @@ def add_caption_field_before(table, idx):
     r2.append(instr)
     p.append(r2)
 
+    # Campo SEQ separate
     r3 = OxmlElement('w:r')
     fld2 = OxmlElement('w:fldChar')
     fld2.set(qn('w:fldCharType'), 'separate')
     r3.append(fld2)
     p.append(r3)
 
+    # Texto "Tabela X – " com cor personalizada
     r4 = OxmlElement('w:r')
+
+    rPr = OxmlElement('w:rPr')
+    color = OxmlElement('w:color')
+    color.set(qn('w:val'), cor_hex)  # Cor personalizada
+    rPr.append(color)
+    r4.append(rPr)
+
     t = OxmlElement('w:t')
-    t.text = f'Figura {idx} – '
+    t.text = f'Tabela {idx} – '
     r4.append(t)
     p.append(r4)
 
+    # Campo SEQ end
     r5 = OxmlElement('w:r')
     fld3 = OxmlElement('w:fldChar')
     fld3.set(qn('w:fldCharType'), 'end')
     r5.append(fld3)
     p.append(r5)
 
+    # Inserir antes da tabela
     tbl = table._element
     tbl.addprevious(p)
 
