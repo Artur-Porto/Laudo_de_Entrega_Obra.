@@ -132,7 +132,7 @@ if uploaded_file:
                             texto_vermelho = ""
                             for run in paragraph.runs:
                                 cor = run.font.color
-                                if cor and cor.rgb == RGBColor(255, 0, 0):
+                                if cor and (cor.rgb == RGBColor(255, 0, 0) or cor.rgb == RGBColor(238, 0, 0)):
                                     texto_vermelho += run.text.strip() + " "
                             if texto_vermelho:
                                 descricoes_docx.append((texto_vermelho.strip(), idx_table))
