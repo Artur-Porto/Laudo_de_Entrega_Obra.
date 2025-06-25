@@ -53,7 +53,9 @@ if uploaded_file:
                                 cor = run.font.color
                                 if cor and cor.rgb in [RGBColor(255, 0, 0), RGBColor(238, 0, 0)]:
                                     texto_vermelho += run.text.strip() + " "
-                            if texto_vermelho:
+                            #if texto_vermelho:
+                                #descricoes_docx.append((texto_vermelho.strip(), idx_table))
+                            if texto_vermelho.strip():
                                 descricoes_docx.append((texto_vermelho.strip(), idx_table))
      # Verificação final de descrições vazias
     descricoes_vazias = [d for d in descricoes_docx if is_vazio(d[0])]
