@@ -44,10 +44,9 @@ if uploaded_file:
                         if "Descrição" in paragraph.text:
                             texto_vermelho = ""
                             for run in paragraph.runs:
-                                texto = run.text.strip()
                                 cor = run.font.color
-                                if cor and cor.rgb in [RGBColor(255, 0, 0), RGBColor(238, 0, 0)] and texto:
-                                    texto_vermelho += texto + " "
+                                if cor and cor.rgb in [RGBColor(255, 0, 0), RGBColor(238, 0, 0)]:
+                                    texto_vermelho += run.text.strip() + " "
                             if texto_vermelho:
                                 descricoes_docx.append((texto_vermelho.strip(), idx_table))
 
