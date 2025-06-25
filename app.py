@@ -49,6 +49,15 @@ if uploaded_file:
                                     texto_vermelho += run.text.strip() + " "
                             if texto_vermelho:
                                 descricoes_docx.append((texto_vermelho.strip(), idx_table))
+        # Verificação final de descrições vazias
+    descricoes_vazias = [d for d in descricoes_docx if not d[0].strip()]
+    num_descricoes_vazias = len(descricoes_vazias)
+    num_descricoes_validas = len(descricoes_docx) - num_descricoes_vazias
+    
+    # Se a diferença entre contagem e descrições válidas for igual ao nº de vazias, remove
+    if (count_nao_conforme - num_descricoes_validas) == num_descricoes_vazias:
+        descricoes_docx = [d for d in descricoes_docx if d[0].strip()]
+        st.info(f"⚠️ {num_descricoes_vazias} descrições vazias removidas automaticamente.")
 
 
     st.write(f"✔️ Total 'Conforme': {count_conforme}")
