@@ -8,3 +8,4 @@ python-docx>=0.8.11
 # Visualizações
 matplotlib>=3.8.4
 numpy>=1.26.4
+pandas
