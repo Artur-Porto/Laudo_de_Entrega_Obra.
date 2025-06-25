@@ -5,6 +5,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 import matplotlib.pyplot as plt
 import numpy as np
 import io
+import pandas as pd 
 
 st.title("📄 Analisador de Conformidades em Documento Word")
 
@@ -51,6 +52,15 @@ if uploaded_file:
 
     st.write(f"✔️ Total 'Conforme': {count_conforme}")
     st.write(f"❌ Total 'Não Conforme': {count_nao_conforme}")
+
+    # Mostrar descrições em formato de tabela
+    st.subheader("📝 Descrições Encontradas")
+
+    if descricoes_docx:
+        df_descricoes = pd.DataFrame(descricoes_docx, columns=["Descrição", "Figura"])
+        st.table(df_descricoes)
+    else:
+        st.info("Nenhuma descrição em vermelho foi encontrada.")
 
     # Gráfico
     fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
