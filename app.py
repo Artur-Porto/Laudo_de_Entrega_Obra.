@@ -6,6 +6,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import io
 import pandas as pd 
+import re
+
+# Função robusta para verificar se uma descrição está "vazia de verdade"
+def is_vazio(texto):
+    texto_limpo = re.sub(r'[\s\u200b\u200c\u200d\uFEFF]+', '', texto)
+    return texto_limpo == ''
 
 st.title("📄 Analisador de Conformidades em Documento Word")
 
@@ -49,14 +55,14 @@ if uploaded_file:
                                     texto_vermelho += run.text.strip() + " "
                             if texto_vermelho:
                                 descricoes_docx.append((texto_vermelho.strip(), idx_table))
-        # Verificação final de descrições vazias
-    descricoes_vazias = [d for d in descricoes_docx if not d[0].strip()]
+     # Verificação final de descrições vazias
+    descricoes_vazias = [d for d in descricoes_docx if is_vazio(d[0])]
     num_descricoes_vazias = len(descricoes_vazias)
     num_descricoes_validas = len(descricoes_docx) - num_descricoes_vazias
-    
-    # Se a diferença entre contagem e descrições válidas for igual ao nº de vazias, remove
+
+# Se o número de descrições vazias bater com o excesso na contagem, remove
     if (count_nao_conforme - num_descricoes_validas) == num_descricoes_vazias:
-        descricoes_docx = [d for d in descricoes_docx if d[0].strip()]
+        descricoes_docx = [d for d in descricoes_docx if not is_vazio(d[0])]
         st.info(f"⚠️ {num_descricoes_vazias} descrições vazias removidas automaticamente.")
 
 
