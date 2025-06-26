@@ -35,7 +35,7 @@ if uploaded_file:
 
     for idx_table, table in enumerate(doc.tables, start=1):
         if idx_table in [34, 50]:
-            print(f"\nConteúdo da tabela {idx_table}:")
+            st.write(f"\nConteúdo da tabela {idx_table}:")
             for row in table.rows:
                 for cell in row.cells:
                     st.write(f"- {cell.text!r}")
