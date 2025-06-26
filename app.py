@@ -11,15 +11,14 @@ from docx.table import Table
 
 
 def analisar_paragrafos(paragraphs, idx_table):
-    count_conforme = 0
-    count_nao_conforme = 0
-    descricoes_docx = []
-    global count_conforme, count_nao_conforme, descricoes_docx
+    count_conf = 0
+    count_nao_conf = 0
+    descricoes = []
 
     for paragraph in paragraphs:
         texto = paragraph.text.lower()
-        count_nao_conforme += len(re.findall(r"não\s*conforme", texto))
-        count_conforme += len(re.findall(r"\bconforme\b", texto))
+        count_nao_conf += len(re.findall(r"não\s*conforme", texto))
+        count_conf += len(re.findall(r"\bconforme\b", texto))
 
         if "descrição" in texto:
             passou_por_descricao = False
@@ -33,20 +32,35 @@ def analisar_paragrafos(paragraphs, idx_table):
                     if cor and cor.rgb in [RGBColor(255, 0, 0), RGBColor(238, 0, 0)] and texto_run:
                         texto_vermelho += texto_run + " "
             if texto_vermelho.strip():
-                descricoes_docx.append((texto_vermelho.strip(), idx_table))
+                descricoes.append((texto_vermelho.strip(), idx_table))
+
+    return count_conf, count_nao_conf, descricoes
+
 
 def analisar_tabela(table, idx_table):
+    total_conf = 0
+    total_nao_conf = 0
+    descricoes_encontradas = []
+
     for row in table.rows:
         for cell in row.cells:
-            analisar_paragrafos(cell.paragraphs, idx_table)
+            c_conf, c_nao_conf, descs = analisar_paragrafos(cell.paragraphs, idx_table)
+            total_conf += c_conf
+            total_nao_conf += c_nao_conf
+            descricoes_encontradas.extend(descs)
 
-            # Tenta analisar subtabelas mesmo que o Table() falhe
             for tbl_el in cell._element.xpath(".//w:tbl"):
                 try:
                     subtable = Table(tbl_el, cell)
-                    analisar_tabela(subtable, idx_table)
+                    c_conf, c_nao_conf, sub_descs = analisar_tabela(subtable, idx_table)
+                    total_conf += c_conf
+                    total_nao_conf += c_nao_conf
+                    descricoes_encontradas.extend(sub_descs)
                 except Exception:
                     continue
+
+    return total_conf, total_nao_conf, descricoes_encontradas
+
 
 
 st.title("📄 Analisador de Conformidades em Documento Word")
