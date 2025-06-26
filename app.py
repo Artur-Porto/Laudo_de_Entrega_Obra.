@@ -8,40 +8,44 @@ import io
 import pandas as pd 
 from docx.table import Table
 
-def analisar_tabela(table, idx_table, descricoes_docx):
-    count_conf = 0
-    count_nao_conf = 0
+count_conforme = 0
+count_nao_conforme = 0
+descricoes_docx = []
 
+def analisar_paragrafos(paragraphs, idx_table):
+    global count_conforme, count_nao_conforme, descricoes_docx
+
+    for paragraph in paragraphs:
+        texto = paragraph.text.lower()
+        count_nao_conforme += len(re.findall(r"não\s*conforme", texto))
+        count_conforme += len(re.findall(r"\bconforme\b", texto))
+
+        if "descrição" in texto:
+            passou_por_descricao = False
+            texto_vermelho = ""
+            for run in paragraph.runs:
+                texto_run = run.text.strip()
+                if "Descrição" in texto_run:
+                    passou_por_descricao = True
+                elif passou_por_descricao:
+                    cor = run.font.color
+                    if cor and cor.rgb in [RGBColor(255, 0, 0), RGBColor(238, 0, 0)] and texto_run:
+                        texto_vermelho += texto_run + " "
+            if texto_vermelho.strip():
+                descricoes_docx.append((texto_vermelho.strip(), idx_table))
+
+def analisar_tabela(table, idx_table):
     for row in table.rows:
         for cell in row.cells:
-            text = cell.text
-            count_nao_conf += len(re.findall(r"não\s*conforme", text.lower()))
-            count_conf += len(re.findall(r"\bconforme\b", text.lower()))
+            analisar_paragrafos(cell.paragraphs, idx_table)
 
-            # Extração de descrição em vermelho após "Descrição"
-            if "descrição" in text.lower():
-                for paragraph in cell.paragraphs:
-                    passou_por_descricao = False
-                    texto_vermelho = ""
-                    for run in paragraph.runs:
-                        texto_run = run.text.strip()
-                        if "Descrição" in texto_run:
-                            passou_por_descricao = True
-                        elif passou_por_descricao:
-                            cor = run.font.color
-                            if cor and cor.rgb in [RGBColor(255, 0, 0), RGBColor(238, 0, 0)] and texto_run:
-                                texto_vermelho += texto_run + " "
-                    if texto_vermelho.strip():
-                        descricoes_docx.append((texto_vermelho.strip(), idx_table))
-
-            # Verifica se há subtabelas na célula
-            for tbl in cell._element.xpath(".//w:tbl"):
-                subtable = Table(tbl, cell)
-                c_conf, c_nao_conf = analisar_tabela(subtable, idx_table, descricoes_docx)
-                count_conf += c_conf
-                count_nao_conf += c_nao_conf
-
-    return count_conf, count_nao_conf
+            # Tenta analisar subtabelas mesmo que o Table() falhe
+            for tbl_el in cell._element.xpath(".//w:tbl"):
+                try:
+                    subtable = Table(tbl_el, cell)
+                    analisar_tabela(subtable, idx_table)
+                except Exception:
+                    continue
 
 
 st.title("📄 Analisador de Conformidades em Documento Word")
@@ -96,16 +100,10 @@ if uploaded_file:
                             
                             if texto_vermelho.strip():
                                 descricoes_docx.append((texto_vermelho.strip(), idx_table))'''
-
-    # Executar análise em todas as tabelas externas do documento
-    count_conforme = 0
-    count_nao_conforme = 0
-    descricoes_docx = []
     
+
     for idx_table, table in enumerate(doc.tables, start=1):
-        c_conf, c_nao_conf = analisar_tabela(table, idx_table, descricoes_docx)
-        count_conforme += c_conf
-        count_nao_conforme += c_nao_conf
+        analisar_tabela(table, idx_table)
 
 
     st.write(f"✔️ Total 'Conforme': {count_conforme}")
