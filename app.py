@@ -24,7 +24,8 @@ def analisar_paragrafos(paragraphs, idx_table):
 
         if "descrição" in texto:
             passou_por_descricao = False
-            texto_vermelho = ""
+            texto_runs = []
+
             for run in paragraph.runs:
                 texto_run = run.text.strip()
                 if "Descrição" in texto_run:
@@ -32,11 +33,14 @@ def analisar_paragrafos(paragraphs, idx_table):
                 elif passou_por_descricao:
                     cor = run.font.color
                     if cor and cor.rgb in [RGBColor(255, 0, 0), RGBColor(238, 0, 0)] and texto_run:
-                        texto_vermelho += texto_run + " "
-            if texto_vermelho.strip():
-                descricoes.append((texto_vermelho.strip(), idx_table))
+                        texto_runs.append(texto_run)
+
+            if texto_runs:
+                descricao_limpinha = ' '.join(texto_runs).replace("  ", " ").strip()
+                descricoes.append((descricao_limpinha, idx_table))
 
     return count_conf, count_nao_conf, descricoes
+
 
 
 def analisar_tabela(table, idx_table):
