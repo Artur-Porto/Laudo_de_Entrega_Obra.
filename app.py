@@ -38,7 +38,7 @@ if uploaded_file:
             print(f"\nConteúdo da tabela {idx_table}:")
             for row in table.rows:
                 for cell in row.cells:
-                    print(f"- {cell.text!r}")
+                    st.write(f"- {cell.text!r}")
 
 
 
