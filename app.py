@@ -27,19 +27,22 @@ def analisar_paragrafos(paragraphs, idx_table):
             texto_runs = []
 
             for run in paragraph.runs:
-                texto_run = run.text.strip()
+                texto_run = run.text
                 if "Descrição" in texto_run:
                     passou_por_descricao = True
                 elif passou_por_descricao:
                     cor = run.font.color
-                    if cor and cor.rgb in [RGBColor(255, 0, 0), RGBColor(238, 0, 0)] and texto_run:
+                    if cor and cor.rgb in [RGBColor(255, 0, 0), RGBColor(238, 0, 0)] and texto_run.strip():
                         texto_runs.append(texto_run)
 
             if texto_runs:
-                descricao_limpinha = ' '.join(texto_runs).replace("  ", " ").strip()
+                # Junta tudo removendo espaço só do começo dos próximos blocos
+                descricao_limpinha = texto_runs[0].strip() + ''.join(r.lstrip() for r in texto_runs[1:])
+                descricao_limpinha = descricao_limpinha.strip()
                 descricoes.append((descricao_limpinha, idx_table))
 
     return count_conf, count_nao_conf, descricoes
+
 
 
 
