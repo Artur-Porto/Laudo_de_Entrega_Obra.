@@ -84,41 +84,17 @@ if uploaded_file:
     st.success("📁 Arquivo carregado com sucesso!")
     doc = Document(uploaded_file)
 
+    
     count_conforme = 0
     count_nao_conforme = 0
     descricoes_docx = []
-
-    '''for idx_table, table in enumerate(doc.tables, start=1):
-        if idx_table in [30, 34, 50]:
-            st.write(f"\nConteúdo da tabela {idx_table}:")
-            for row in table.rows:
-                for cell in row.cells:
-                    st.write(f"- {cell.text!r}")
-
-
-
-    for idx_table, table in enumerate(doc.tables, start=1):
-        for row in table.rows:
-            for cell in row.cells:
-                text = cell.text
-                count_nao_conforme += text.count("Não conforme")
-                count_conforme += text.count("Conforme")
-
-                if "Descrição" in text:
-                    for paragraph in cell.paragraphs:
-                        if "Descrição" in paragraph.text:
-                            texto_vermelho = ""
-                            for run in paragraph.runs:
-                                cor = run.font.color
-                                if cor and cor.rgb in [RGBColor(255, 0, 0), RGBColor(238, 0, 0)]:
-                                    texto_vermelho += run.text.strip() + " "
-                            
-                            if texto_vermelho.strip():
-                                descricoes_docx.append((texto_vermelho.strip(), idx_table))'''
     
-
     for idx_table, table in enumerate(doc.tables, start=1):
-        analisar_tabela(table, idx_table)
+        c_conf, c_nao_conf, descs = analisar_tabela(table, idx_table)
+        count_conforme += c_conf
+        count_nao_conforme += c_nao_conf
+        descricoes_docx.extend(descs)
+
 
 
     st.write(f"✔️ Total 'Conforme': {count_conforme}")
