@@ -34,7 +34,7 @@ if uploaded_file:
     descricoes_docx = []
 
     for idx_table, table in enumerate(doc.tables, start=1):
-        if idx_table in [34, 50]:
+        if idx_table in [30, 34, 50]:
             st.write(f"\nConteúdo da tabela {idx_table}:")
             for row in table.rows:
                 for cell in row.cells:
