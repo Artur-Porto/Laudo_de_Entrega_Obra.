@@ -8,11 +8,12 @@ import io
 import pandas as pd 
 from docx.table import Table
 
-count_conforme = 0
-count_nao_conforme = 0
-descricoes_docx = []
+
 
 def analisar_paragrafos(paragraphs, idx_table):
+    count_conforme = 0
+    count_nao_conforme = 0
+    descricoes_docx = []
     global count_conforme, count_nao_conforme, descricoes_docx
 
     for paragraph in paragraphs:
