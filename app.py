@@ -34,10 +34,10 @@ if uploaded_file:
     descricoes_docx = []
 
     for idx_table, table in enumerate(doc.tables, start=1):
-    for row in table.rows:
-        for cell in row.cells:
-            if cell._element.xpath(".//w:tbl"):
-                print(f"Tabela {idx_table} contém uma tabela aninhada.")
+        for row in table.rows:
+            for cell in row.cells:
+                if cell._element.xpath(".//w:tbl"):
+                    print(f"Tabela {idx_table} contém uma tabela aninhada.")
 
     for idx_table, table in enumerate(doc.tables, start=1):
         for row in table.rows:
