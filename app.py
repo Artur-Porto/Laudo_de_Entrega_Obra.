@@ -36,8 +36,12 @@ if uploaded_file:
     for idx_table, table in enumerate(doc.tables, start=1):
         for row in table.rows:
             for cell in row.cells:
-                if cell._element.xpath(".//w:tbl"):
-                    print(f"Tabela {idx_table} contém uma tabela aninhada.")
+                for paragraph in cell.paragraphs:
+                    full_text = "".join([run.text for run in paragraph.runs])
+                    if "Não conforme" in full_text:
+                        print(f"📌 Encontrado 'Não conforme' na tabela {idx_table}")
+                        count_nao_conforme += 1
+
 
     for idx_table, table in enumerate(doc.tables, start=1):
         for row in table.rows:
