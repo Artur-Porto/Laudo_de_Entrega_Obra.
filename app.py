@@ -30,6 +30,8 @@ def analisar_paragrafos(paragraphs, idx_table):
                 for j in range(i + 1, min(i + 4, len(runs))):
                     if runs[j].text.strip() == "Conforme":
                         count_conf += 1
+                        st.write(f"✔️ Detecção em tabela {idx_table}: {[run.text for run in runs]}")
+
                         break
                 break  # conta só uma vez por parágrafo
 
