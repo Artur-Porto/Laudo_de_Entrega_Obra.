@@ -21,28 +21,23 @@ def analisar_paragrafos(paragraphs, idx_table):
         texto = paragraph.text
         count_nao_conf += len(re.findall(r"não\s*conforme", texto.lower()))
         
+        # ✔️ Contar "Conforme" quando aparecer após emoji em runs separados
         runs = paragraph.runs
-        contou_conforme = False
-        
-        # ✔️ Primeira verificação: runs separadas
         for i in range(len(runs)):
-            if contou_conforme:
-                break
             texto_emoji = runs[i].text.strip()
             if texto_emoji in ["✔", "✔️", "✓", "✅"]:
                 for j in range(i + 1, min(i + 4, len(runs))):
                     if runs[j].text.strip().lower() == "conforme":
                         count_conf += 1
-                        contou_conforme = True
                         break
+                break
         
-        # ✔️ Segunda verificação: mesma run
-        if not contou_conforme:
-            for run in runs:
-                texto_run = run.text.strip().lower()
-                if any(e in texto_run for e in ["✔", "✔️", "✓", "✅"]) and "conforme" in texto_run:
-                    count_conf += 1
-                    break
+        # ✔️ Contar "Conforme" quando estiver na mesma run do emoji
+        for run in runs:
+            texto_run = run.text.strip().lower()
+            if any(e in texto_run for e in ["✔", "✔️", "✓", "✅"]) and "conforme" in texto_run:
+                count_conf += 1
+                break
 
 
 
