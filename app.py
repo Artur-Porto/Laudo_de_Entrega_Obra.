@@ -21,7 +21,7 @@ def analisar_paragrafos(paragraphs, idx_table):
         texto = paragraph.text.lower()
         count_nao_conf += len(re.findall(r"não\s*conforme", texto))
         #count_conf += len(re.findall(r"\bconforme\b", texto))
-        count_conf += len(re.findall(r"✔️\s*Conforme", texto))
+        count_conf += len(re.findall(r"(?:✔|✔️|✅)\s*Conforme", texto))
         if "descrição" in texto:
             passou_por_descricao = False
             texto_runs = []
