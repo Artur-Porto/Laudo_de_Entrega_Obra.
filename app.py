@@ -17,25 +17,32 @@ def analisar_paragrafos(paragraphs, idx_table):
     count_nao_conf = 0
     descricoes = []
 
+    # Armazena conteúdos únicos para evitar contagem duplicada
+    paragrafos_com_conforme = set()
+
     for paragraph in paragraphs:
         texto = paragraph.text.lower()
         count_nao_conf += len(re.findall(r"não\s*conforme", texto))
 
-        # ✅ Contar "✔️ Conforme" mesmo que separados por runs com espaços
+        # Contar "✔️ Conforme" baseado na sequência de runs
         runs = paragraph.runs
+        texto_completo = ' '.join(run.text.strip() for run in runs)
+
+        if texto_completo in paragrafos_com_conforme:
+            continue  # já contamos esse parágrafo
+
         for i in range(len(runs)):
             texto_emoji = runs[i].text.strip()
             if texto_emoji in ["✔", "✔️", "✅"]:
-                # Procura "Conforme" nos próximos 3 runs (pulando espaços)
+                # Procura "Conforme" nos próximos 3 runs
                 for j in range(i + 1, min(i + 4, len(runs))):
                     if runs[j].text.strip() == "Conforme":
                         count_conf += 1
-                        st.write(f"✔️ Detecção em tabela {idx_table}: {[run.text for run in runs]}")
-
+                        paragrafos_com_conforme.add(texto_completo)
                         break
-                break  # conta só uma vez por parágrafo
+                break  # evita múltiplas contagens por parágrafo
 
-        # ✅ Coleta de descrição em vermelho
+        # Coleta de descrição em vermelho
         if "descrição" in texto:
             passou_por_descricao = False
             texto_runs = []
@@ -55,6 +62,7 @@ def analisar_paragrafos(paragraphs, idx_table):
                 descricoes.append((descricao_limpinha, idx_table))
 
     return count_conf, count_nao_conf, descricoes
+
 
 
 
