@@ -20,6 +20,12 @@ def analisar_paragrafos(paragraphs, idx_table):
     for paragraph in paragraphs:
         texto = paragraph.text.lower()
         count_nao_conf += len(re.findall(r"não\s*conforme", texto))
+        # DEBUG: inspecionar os runs do parágrafo que contém "Conforme"
+        if "Conforme" in paragraph.text:
+            st.write("🧩 Novo parágrafo contendo 'Conforme':")
+            for i, run in enumerate(paragraph.runs):
+                st.write(f"Run {i}: '{run.text}'")
+
 
         # ✅ Contar "✔️ Conforme" baseado na sequência de runs
         runs = paragraph.runs
