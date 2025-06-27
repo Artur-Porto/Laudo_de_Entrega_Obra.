@@ -20,8 +20,17 @@ def analisar_paragrafos(paragraphs, idx_table):
     for paragraph in paragraphs:
         texto = paragraph.text.lower()
         count_nao_conf += len(re.findall(r"não\s*conforme", texto))
-        #count_conf += len(re.findall(r"\bconforme\b", texto))
-        count_conf += len(re.findall(r"(?:✔|✔️|✅)\s*Conforme", texto))
+
+        # ✅ Contar "✔️ Conforme" baseado na sequência de runs
+        runs = paragraph.runs
+        for i in range(len(runs) - 1):
+            texto1 = runs[i].text.strip()
+            texto2 = runs[i+1].text.strip()
+            if texto1 in ["✔️", "✅"] and texto2 == "Conforme":
+                count_conf += 1
+                break  # conta apenas uma vez por parágrafo
+
+        # ✅ Coleta de descrição em vermelho
         if "descrição" in texto:
             passou_por_descricao = False
             texto_runs = []
@@ -36,12 +45,12 @@ def analisar_paragrafos(paragraphs, idx_table):
                         texto_runs.append(texto_run)
 
             if texto_runs:
-                # Junta tudo removendo espaço só do começo dos próximos blocos
                 descricao_limpinha = texto_runs[0].strip() + ''.join(r.lstrip() for r in texto_runs[1:])
                 descricao_limpinha = descricao_limpinha.strip()
                 descricoes.append((descricao_limpinha, idx_table))
 
     return count_conf, count_nao_conf, descricoes
+
 
 
 
