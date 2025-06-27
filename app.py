@@ -18,17 +18,26 @@ def analisar_paragrafos(paragraphs, idx_table):
     descricoes = []
 
     for paragraph in paragraphs:
-        texto = paragraph.text.lower()
-        count_nao_conf += len(re.findall(r"não\s*conforme", texto))
-        
-        if re.search(r"[✔✓✅]\s*Conforme", paragraph.text):
-            count_conf += 1
+        texto = paragraph.text
+        count_nao_conf += len(re.findall(r"não\s*conforme", texto.lower()))
 
-        if "descrição" in texto:
+        # ✔️ Contar "Conforme" quando aparecer após emoji em runs separados
+        runs = paragraph.runs
+        for i in range(len(runs)):
+            texto_emoji = runs[i].text.strip()
+            if texto_emoji in ["✔", "✔️", "✓", "✅"]:
+                for j in range(i + 1, min(i + 4, len(runs))):
+                    if runs[j].text.strip() == "Conforme":
+                        count_conf += 1
+                        break
+                break
+
+        # 🟥 Coletar descrições em vermelho
+        if "descrição" in texto.lower():
             passou_por_descricao = False
             texto_runs = []
 
-            for run in paragraph.runs:
+            for run in runs:
                 texto_run = run.text
                 if "Descrição" in texto_run:
                     passou_por_descricao = True
@@ -38,12 +47,12 @@ def analisar_paragrafos(paragraphs, idx_table):
                         texto_runs.append(texto_run)
 
             if texto_runs:
-                # Junta tudo removendo espaço só do começo dos próximos blocos
                 descricao_limpinha = texto_runs[0].strip() + ''.join(r.lstrip() for r in texto_runs[1:])
                 descricao_limpinha = descricao_limpinha.strip()
                 descricoes.append((descricao_limpinha, idx_table))
 
     return count_conf, count_nao_conf, descricoes
+
 
 
 
