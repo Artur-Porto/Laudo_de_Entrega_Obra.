@@ -21,12 +21,12 @@ def analisar_paragrafos(paragraphs, idx_table):
         texto = paragraph.text
         count_nao_conf += len(re.findall(r"não\s*conforme", texto.lower()))
 
-    texto_completo = ' '.join(run.text for run in paragraph.runs).lower()
-    if "situação" in texto_completo and "conforme" in texto_completo:
-        count_conf += 1
-        
-    if "situação" in texto_completo:
-        st.write("📄 Candidato a 'Conforme':", texto_completo)
+        texto_completo = ' '.join(run.text for run in paragraph.runs).lower()
+        if "situação" in texto_completo and "conforme" in texto_completo:
+            count_conf += 1
+            
+        if "situação" in texto_completo:
+            st.write("📄 Candidato a 'Conforme':", texto_completo)
 
 
 
