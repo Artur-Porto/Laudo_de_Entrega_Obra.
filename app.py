@@ -168,6 +168,7 @@ if uploaded_file:
     doc.add_page_break()
 
     tabela = doc.add_table(rows=len(descricoes_docx) + 1, cols=3)
+    tabela.style = 'Table Grid'
     cabecalhos = ["Descrição", "Figura", "Situação"]
 
     # Cabeçalhos
