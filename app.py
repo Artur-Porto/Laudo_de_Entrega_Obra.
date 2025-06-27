@@ -21,15 +21,9 @@ def analisar_paragrafos(paragraphs, idx_table):
         texto = paragraph.text
         count_nao_conf += len(re.findall(r"não\s*conforme", texto.lower()))
 
-    # Somente conta "Conforme" se vier após "Situação:"
-    if "Situação:" in paragraph.text:
-        for i in range(len(runs)):
-            if runs[i].text.strip() in ["✔", "✔️", "✓", "✅"]:
-                for j in range(i + 1, min(i + 4, len(runs))):
-                    if runs[j].text.strip() == "Conforme":
-                        count_conf += 1
-                        break
-                break
+    if "Situação:" in paragraph.text and "Conforme" in paragraph.text:
+        count_conf += 1
+
 
         # 🟥 Coletar descrições em vermelho
         if "descrição" in texto.lower():
