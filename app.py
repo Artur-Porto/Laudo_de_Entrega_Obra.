@@ -9,8 +9,7 @@ import pandas as pd
 from docx.table import Table
 import re
 
-
-
+# === Funções de análise ===
 
 def analisar_paragrafos(paragraphs, idx_table):
     count_conf = 0
@@ -20,7 +19,7 @@ def analisar_paragrafos(paragraphs, idx_table):
     for paragraph in paragraphs:
         texto = paragraph.text
         count_nao_conf += len(re.findall(r"não\s*conforme", texto.lower()))
-        
+
         # ✔️ Contar "Conforme" quando aparecer após emoji em runs separados
         runs = paragraph.runs
         for i in range(len(runs)):
@@ -31,15 +30,13 @@ def analisar_paragrafos(paragraphs, idx_table):
                         count_conf += 1
                         break
                 break
-        
+
         # ✔️ Contar "Conforme" quando estiver na mesma run do emoji
         for run in runs:
             texto_run = run.text.strip().lower()
             if any(e in texto_run for e in ["✔", "✔️", "✓", "✅"]) and "conforme" in texto_run:
                 count_conf += 1
                 break
-
-
 
         # 🟥 Coletar descrições em vermelho
         if "descrição" in texto.lower():
@@ -61,12 +58,6 @@ def analisar_paragrafos(paragraphs, idx_table):
                 descricoes.append((descricao_limpinha, idx_table))
 
     return count_conf, count_nao_conf, descricoes
-
-
-
-
-
-
 
 def analisar_tabela(table, idx_table):
     total_conf = 0
@@ -92,7 +83,7 @@ def analisar_tabela(table, idx_table):
 
     return total_conf, total_nao_conf, descricoes_encontradas
 
-
+# === Interface Streamlit ===
 
 st.title("📄 Analisador de Conformidades em Documento Word")
 
@@ -115,23 +106,19 @@ if uploaded_file:
     st.success("📁 Arquivo carregado com sucesso!")
     doc = Document(uploaded_file)
 
-    
     count_conforme = 0
     count_nao_conforme = 0
     descricoes_docx = []
-    
+
     for idx_table, table in enumerate(doc.tables, start=1):
         c_conf, c_nao_conf, descs = analisar_tabela(table, idx_table)
         count_conforme += c_conf
         count_nao_conforme += c_nao_conf
         descricoes_docx.extend(descs)
 
-
-
     st.write(f"✔️ Total 'Conforme': {count_conforme}")
     st.write(f"❌ Total 'Não Conforme': {count_nao_conforme}")
 
-    # Mostrar descrições em formato de tabela
     st.subheader("📝 Descrições Encontradas")
 
     if descricoes_docx:
@@ -139,6 +126,22 @@ if uploaded_file:
         st.table(df_descricoes)
     else:
         st.info("Nenhuma descrição em vermelho foi encontrada.")
+
+    # Gerar .xlsx com coluna "Situação"
+    df_completo = df_descricoes.copy()
+    df_completo["Situação"] = ""
+
+    excel_buffer = io.BytesIO()
+    with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+        df_completo.to_excel(writer, index=False, sheet_name='Análise')
+    excel_buffer.seek(0)
+
+    st.download_button(
+        label="📥 Baixar Tabela Completa (.xlsx)",
+        data=excel_buffer,
+        file_name=uploaded_file.name.replace(".docx", " - Análise.xlsx"),
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
     # Gráfico
     fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
@@ -164,14 +167,15 @@ if uploaded_file:
     st.pyplot(fig)
     plt.close()
 
-    # Inserir tabela e gráfico no documento original
+    # Inserir tabela (2 colunas) no Word
     doc.add_page_break()
+    tabela = doc.add_table(rows=len(descricoes_docx) + 1, cols=2)
+    try:
+        tabela.style = 'Table Grid'
+    except KeyError:
+        pass
+    cabecalhos = ["Descrição", "Figura"]
 
-    tabela = doc.add_table(rows=len(descricoes_docx) + 1, cols=3)
-    tabela.style = 'Table Grid'
-    cabecalhos = ["Descrição", "Figura", "Situação"]
-
-    # Cabeçalhos
     for col, texto in enumerate(cabecalhos):
         cell = tabela.cell(0, col)
         cell.text = texto
@@ -179,21 +183,13 @@ if uploaded_file:
             run.font.size = Pt(10)
             run.font.bold = True
 
-    # Linhas da tabela
     for i, (descricao, num_tabela) in enumerate(descricoes_docx, start=1):
-        # Descrição
         cell_desc = tabela.cell(i, 0)
         run = cell_desc.paragraphs[0].add_run(descricao)
         run.font.size = Pt(10)
-        # Figura
         cell_fig = tabela.cell(i, 1)
         cell_fig.text = str(num_tabela)
         for run in cell_fig.paragraphs[0].runs:
-            run.font.size = Pt(10)
-        # Situação (vazio)
-        cell_sit = tabela.cell(i, 2)
-        cell_sit.text = ""
-        for run in cell_sit.paragraphs[0].runs:
             run.font.size = Pt(10)
 
     # Inserir gráfico
@@ -202,7 +198,7 @@ if uploaded_file:
     run.add_picture(grafico_path, width=Inches(5))
     paragrafo_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    # Salvar
+    # Salvar Word
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
