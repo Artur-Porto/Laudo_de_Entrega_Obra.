@@ -127,21 +127,6 @@ if uploaded_file:
     else:
         st.info("Nenhuma descrição em vermelho foi encontrada.")
 
-    # Gerar .xlsx com coluna "Situação"
-    df_completo = df_descricoes.copy()
-    df_completo["Situação"] = ""
-
-    excel_buffer = io.BytesIO()
-    with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
-        df_completo.to_excel(writer, index=False, sheet_name='Análise')
-    excel_buffer.seek(0)
-
-    st.download_button(
-        label="📥 Baixar Tabela Completa (.xlsx)",
-        data=excel_buffer,
-        file_name=uploaded_file.name.replace(".docx", " - Análise.xlsx"),
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
 
     # Gráfico
     fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
@@ -209,4 +194,20 @@ if uploaded_file:
         data=buffer,
         file_name=uploaded_file.name.replace(".docx", " - Análise.docx"),
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+
+    # Gerar .xlsx com coluna "Status"
+    df_completo = df_descricoes.copy()
+    df_completo["Status"] = ""
+
+    excel_buffer = io.BytesIO()
+    with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+        df_completo.to_excel(writer, index=False, sheet_name='Análise')
+    excel_buffer.seek(0)
+
+    st.download_button(
+        label="📥 Baixar Tabela Completa (.xlsx)",
+        data=excel_buffer,
+        file_name=uploaded_file.name.replace(".docx", " - Análise.xlsx"),
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
