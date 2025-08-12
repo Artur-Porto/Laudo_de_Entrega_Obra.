@@ -138,19 +138,20 @@ if uploaded_file:
         absolute = int(np.round(pct / 100. * np.sum(allvals)))
         return f"{pct:.1f}%\n({absolute:d})"
 
-    wedges, _, autotexts = ax.pie(
-        data, autopct=lambda pct: func(pct, data),
-        textprops=dict(color="w"),
-        colors=colors
-    )
-    ax.legend(wedges, labels, title="Situação", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
-    plt.setp(autotexts, size=8, weight="bold")
-    ax.set_title("Análise de Conformidades")
-    grafico_path = "grafico_pizza.png"
-    plt.savefig(grafico_path)
-    st.subheader("📊 Gráfico de Conformidades")
-    st.pyplot(fig)
-    plt.close()
+    if sum(data) > 0:
+        wedges, _, autotexts = ax.pie(
+            data, autopct=lambda pct: func(pct, data),
+            textprops=dict(color="w"),
+            colors=colors
+        )
+        ax.legend(wedges, labels, title="Situação", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
+        plt.setp(autotexts, size=8, weight="bold")
+        ax.set_title("Análise de Conformidades")
+    else:
+        ax.text(0.5, 0.5, "Sem dados para exibir", ha="center", va="center", fontsize=12)
+    
+        st.pyplot(fig)
+        plt.close()
 
     # Inserir tabela (2 colunas) no Word
     doc.add_page_break()
