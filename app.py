@@ -133,11 +133,11 @@ if uploaded_file:
     labels = ["Conforme", "Não conforme"]
     data = [count_conforme, count_nao_conforme]
     colors = ['#4CAF50', '#F44336']
-
+    
     def func(pct, allvals):
         absolute = int(np.round(pct / 100. * np.sum(allvals)))
         return f"{pct:.1f}%\n({absolute:d})"
-
+    
     if sum(data) > 0:
         wedges, _, autotexts = ax.pie(
             data, autopct=lambda pct: func(pct, data),
@@ -150,8 +150,13 @@ if uploaded_file:
     else:
         ax.text(0.5, 0.5, "Sem dados para exibir", ha="center", va="center", fontsize=12)
     
-        st.pyplot(fig)
-        plt.close()
+    # Salva sempre, mesmo sem dados
+    grafico_path = "grafico_pizza.png"
+    plt.savefig(grafico_path)
+    
+    st.subheader("📊 Gráfico de Conformidades")
+    st.pyplot(fig)
+    plt.close()
 
     # Inserir tabela (2 colunas) no Word
     doc.add_page_break()
