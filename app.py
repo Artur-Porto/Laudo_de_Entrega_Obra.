@@ -10,7 +10,6 @@ from docx.table import Table
 import re
 
 # === Funções de análise ===
-
 def analisar_paragrafos(paragraphs, idx_table):
     count_conf = 0
     count_nao_conf = 0
@@ -84,7 +83,6 @@ def analisar_tabela(table, idx_table):
     return total_conf, total_nao_conf, descricoes_encontradas
 
 # === Interface Streamlit ===
-
 st.title("📄 Analisador de Conformidades em Documento Word")
 
 st.info(
@@ -121,30 +119,34 @@ if uploaded_file:
 
     st.subheader("📝 Descrições Encontradas")
 
+    # 🔹 Sempre inicializa df_descricoes
+    df_descricoes = pd.DataFrame(columns=["Descrição", "Figura"])
     if descricoes_docx:
         df_descricoes = pd.DataFrame(descricoes_docx, columns=["Descrição", "Figura"])
         st.table(df_descricoes)
     else:
         st.info("Nenhuma descrição em vermelho foi encontrada.")
 
-
-    # Gráfico
+    # 🔹 Gráfico protegido contra todos zeros
     fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
     labels = ["Conforme", "Não conforme"]
     data = [count_conforme, count_nao_conforme]
     colors = ['#4CAF50', '#F44336']
 
-    def func(pct, allvals):
-        absolute = int(np.round(pct / 100. * np.sum(allvals)))
-        return f"{pct:.1f}%\n({absolute:d})"
+    if sum(data) > 0:
+        def func(pct, allvals):
+            absolute = int(np.round(pct / 100. * np.sum(allvals)))
+            return f"{pct:.1f}%\n({absolute:d})"
 
-    wedges, _, autotexts = ax.pie(
-        data, autopct=lambda pct: func(pct, data),
-        textprops=dict(color="w"),
-        colors=colors
-    )
-    ax.legend(wedges, labels, title="Situação", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
-    plt.setp(autotexts, size=8, weight="bold")
+        wedges, _, autotexts = ax.pie(
+            data, autopct=lambda pct: func(pct, data),
+            textprops=dict(color="w"),
+            colors=colors
+        )
+        ax.legend(wedges, labels, title="Situação", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
+        plt.setp(autotexts, size=8, weight="bold")
+    else:
+        ax.text(0.5, 0.5, "Sem dados", ha="center", va="center")
     ax.set_title("Análise de Conformidades")
     grafico_path = "grafico_pizza.png"
     plt.savefig(grafico_path)
