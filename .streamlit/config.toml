@@ -1,2 +1,2 @@
 [server]
-maxUploadSize = 300  # limite em MB (aqui 1 GB)
+maxUploadSize = 1024  # limite em MB (aqui 1 GB)
